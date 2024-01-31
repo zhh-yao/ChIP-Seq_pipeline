@@ -1,12 +1,12 @@
-# Pipeline for ChIP-Seq Analysis in MacOS
+#  Pipeline for ChIP-Seq Analysis in MacOS
 
-# Download sratoolkit:
-
-
-# install bowtie2:
+## Download sratoolkit:
 
 
-# install bedtools
+## install bowtie2:
 
 
-# Install MACS3 to user directory:
+## install bedtools
+
+
+## Install MACS3 to user directory:
