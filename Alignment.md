@@ -1,0 +1,55 @@
+## Alignment to reference genome
+### 1. Bowtie2 Alignment
+[Bowtie2](https://bowtie-bio.sourceforge.net/bowtie2/index.shtml) is an ultrafast and memory-efficient tool for aligning sequencing reads to long reference sequences. Installing bowtie2 with
+
+```
+conda install bowtie2
+```
+
+Index should be built first based on hg38.fa, which can be downloaded from [UCSC](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/).
+
+```shell
+bowtie2-build path/to/hg38.fa path/to/bowtie2Index/hg38
+```
+
+With reference genome index prepared, two fastq files with read1 and read2 can be aligned to human genome
+
+```shell
+bowtie2 --end-to-end --very-sensitive --no-mixed --no-discordant --phred33 -I 10 -X 700 -p 8 -x path/to/bowtie2Index/hg38 -1 fastq/R1.fastq -2 fastq/R2.fastq -S alignment/sam/bowtie2.sam &> alignment/sam/bowtie2.txt
+```
+
+Since our experiment has E.coli spike-in for calibration, we should also build [E.coli reference](https://www.ebi.ac.uk/ena/browser/view/U00096) index and align the reads to it.
+
+```shell
+bowtie2-build path/to/U00096.3.fasta path/to/bowtie2Index/Ecoli
+
+bowtie2 --end-to-end --very-sensitive --no-overlap --no-dovetail --no-mixed --no-discordant --phred33 -I 10 -X 700 -p 8 -x path/to/bowtie2Index/Ecoli -1 fastq/R1.fastq -2 fastq/R2.fastq.fastq -S alignment/sam/bowtie2_spikeIn.sam &> alignment/sam/bowtie2_spikeIn.txt
+```
+
+### 2. Remove duplicates and blacklist
+
+Then, we need a BAM alignment file, which is a binary equivalent version of the SAM file with much smaller size, for downstream analysis. 
+
+```shell
+conda install samtools
+
+samtools view -S -b alignment/sam/bowtie2.sam | samtools sort - -o alignment/bam/sorted.bam
+```
+
+Filter the reads to keep only uniquely mapping reads
+
+Check the duplication rate using [Picard](https://broadinstitute.github.io/picard/).
+
+```shell
+conda install picard
+
+java -jar picard.jar MarkDuplicates I=alignment/bam/sorted.bam O=alignment/bam/sorted.rmDup.bam REMOVE_DUPLICATES=true METRICS_FILE=alignment/bam/picard_summary/picard.rmDup.txt
+```
+
+Furthermorem, we need to filter out Blacklisted regions
+
+```shell
+conda install bedtools
+
+bedtools intersect -v -abam alignment/bam/sorted.rmDup.bam -b mm10-blacklist.v2.bed > alignment/bam/sorted.rmDup.rmBL.bam
+```
