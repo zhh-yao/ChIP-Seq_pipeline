@@ -15,6 +15,7 @@ Investigating R-loops differences between WT and Neil2/Neil123 KO human Hap1 cel
 - [BEDTools](https://bedtools.readthedocs.io/en/latest/)
 - [MACS3](https://macs3-project.github.io/MACS/)
 - [SEACR](https://github.com/FredHutch/SEACR)
+- [ChIPseeker](https://bioconductor.org/packages/release/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html)
 - ...
 
 
